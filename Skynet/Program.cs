@@ -17,7 +17,9 @@ class Player
     static void Main(string[] args)
     {
         string[] inputs;
-        inputs = Console.ReadLine().Split(' ');
+        var a = Console.ReadLine();
+        Console.Error.WriteLine(a);
+        inputs = a.Split(' ');
         int N = int.Parse(inputs[0]); // the total number of nodes in the level, including the gateways
         nodes = new int[N, N];
         gateways = new int[N];
@@ -26,21 +28,28 @@ class Player
         int E = int.Parse(inputs[2]); // the number of exit gateways
         for (int i = 0; i < L; i++)
         {
-            inputs = Console.ReadLine().Split(' ');
+            a = Console.ReadLine();
+            Console.Error.WriteLine(a);
+            inputs = a.Split(' ');
             int N1 = int.Parse(inputs[0]); // N1 and N2 defines a link between these nodes
             int N2 = int.Parse(inputs[1]);
             nodes[N1, N2] = 1;
+            nodes[N2, N1] = 1;
         }
         for (int i = 0; i < E; i++)
         {
-            int EI = int.Parse(Console.ReadLine()); // the index of a gateway node
+            a = Console.ReadLine();
+            Console.Error.WriteLine(a);
+            int EI = int.Parse(a); // the index of a gateway node
             gateways[EI] = 1;
         }
 
         // game loop
         while (true)
         {
-            int SI = int.Parse(Console.ReadLine()); // The index of the node on which the Skynet agent is positioned this turn
+            a = Console.ReadLine();
+            Console.Error.WriteLine(a);
+            int SI = int.Parse(a); // The index of the node on which the Skynet agent is positioned this turn
 
             ClosestNodeWithDist closestNode = new ClosestNodeWithDist { dist = int.MaxValue };
             for (int i = 0; i < nodes.GetLength(0); i++)
@@ -74,9 +83,9 @@ class Player
             {
                 if (nodes[currNode, j] == 1)
                 {
-                    queue.Enqueue(j);
                     if (distToNode[j] > distToNode[currNode] + 1)
                     {
+                        queue.Enqueue(j);
                         distToNode[j] = distToNode[currNode] + 1;
                         parentNodes[j] = currNode;
                     }
