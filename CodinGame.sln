@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodinGame", "CodinGame\Codi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChuckNorris", "ChuckNorris\ChuckNorris.csproj", "{87060627-F08D-447C-88DF-A13F6C5C3C52}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skynet", "Skynet\Skynet.csproj", "{06227F5F-8FC9-4F5E-BF0C-9815F5DCBD7E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{87060627-F08D-447C-88DF-A13F6C5C3C52}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87060627-F08D-447C-88DF-A13F6C5C3C52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87060627-F08D-447C-88DF-A13F6C5C3C52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06227F5F-8FC9-4F5E-BF0C-9815F5DCBD7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06227F5F-8FC9-4F5E-BF0C-9815F5DCBD7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06227F5F-8FC9-4F5E-BF0C-9815F5DCBD7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06227F5F-8FC9-4F5E-BF0C-9815F5DCBD7E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

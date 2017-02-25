@@ -42,23 +42,27 @@ class Player
         {
             int SI = int.Parse(Console.ReadLine()); // The index of the node on which the Skynet agent is positioned this turn
 
-            var closestNodeWithDist = gateways.Where(x => x == 1).Select(x => GetClosestNodeWithDist(SI, x));
-            var closestNode = closestNodeWithDist.First(x => x.dist == closestNodeWithDist.Min(y => y.dist));
+            ClosestNodeWithDist closestNode = new ClosestNodeWithDist { dist = int.MaxValue };
+            for (int i = 0; i < nodes.GetLength(0); i++)
+            {
+                if (gateways[i] != 0)
+                {
+                    var newclosestNodeWithDist = GetClosestNodeWithDist(SI, i);
+                    if (newclosestNodeWithDist.dist < closestNode.dist)
+                        closestNode = newclosestNodeWithDist;
+                }
+            }
 
             Console.WriteLine($"{closestNode.x} {closestNode.y}");
-            // Write an action using Console.WriteLine()
-            // To debug: Console.Error.WriteLine("Debug messages...");
-
-
-            // Example: 0 1 are the indices of the nodes you wish to sever the link between
-            //Console.WriteLine("0 1");
         }
     }
 
     private static ClosestNodeWithDist GetClosestNodeWithDist(int startNode, int exitNode)
     {
         Queue<int> queue = new Queue<int>();
-        int[] distToNode = new int[nodes.GetLength(0)];
+        int[] distToNode = new int[nodes.GetLength(0)].Select(x=>int.MaxValue).ToArray();
+        distToNode[startNode] = 0;
+
         int[] parentNodes = new int[nodes.GetLength(0)];
 
         int currNode = startNode;
@@ -66,18 +70,15 @@ class Player
         while (currNode != exitNode)
         {
             currNode = queue.Dequeue();
-            for (int i = 0; i < nodes.GetLength(0); i++)
+            for (int j = 0; j < nodes.GetLength(0); j++)
             {
-                for (int j = 0; j < nodes.GetLength(0); j++)
+                if (nodes[currNode, j] == 1)
                 {
-                    if (nodes[i, j] == 1)
+                    queue.Enqueue(j);
+                    if (distToNode[j] > distToNode[currNode] + 1)
                     {
-                        queue.Enqueue(j);
-                        if (distToNode[j] > distToNode[i] + 1)
-                        {
-                            distToNode[j] = distToNode[i] + 1;
-                            parentNodes[j] = i;
-                        }
+                        distToNode[j] = distToNode[currNode] + 1;
+                        parentNodes[j] = currNode;
                     }
                 }
             }
