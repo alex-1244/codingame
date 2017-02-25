@@ -45,6 +45,7 @@ class Player
         }
 
         // game loop
+        List<ClosestNodeWithDist> removedNodes = new List<ClosestNodeWithDist>();
         while (true)
         {
             a = Console.ReadLine();
@@ -52,16 +53,21 @@ class Player
             int SI = int.Parse(a); // The index of the node on which the Skynet agent is positioned this turn
 
             ClosestNodeWithDist closestNode = new ClosestNodeWithDist { dist = int.MaxValue };
+            
             for (int i = 0; i < nodes.GetLength(0); i++)
             {
                 if (gateways[i] != 0)
                 {
                     var newclosestNodeWithDist = GetClosestNodeWithDist(SI, i);
                     if (newclosestNodeWithDist.dist < closestNode.dist)
+                    {
                         closestNode = newclosestNodeWithDist;
+                        removedNodes.Add(new ClosestNodeWithDist { y = closestNode.y, x = closestNode.x, dist = closestNode.dist });
+                    }
                 }
             }
-
+            nodes[closestNode.x, closestNode.y] = 0;
+            nodes[closestNode.y, closestNode.x] = 0;
             Console.WriteLine($"{closestNode.x} {closestNode.y}");
         }
     }
@@ -69,7 +75,7 @@ class Player
     private static ClosestNodeWithDist GetClosestNodeWithDist(int startNode, int exitNode)
     {
         Queue<int> queue = new Queue<int>();
-        int[] distToNode = new int[nodes.GetLength(0)].Select(x=>int.MaxValue).ToArray();
+        int[] distToNode = new int[nodes.GetLength(0)].Select(x => int.MaxValue).ToArray();
         distToNode[startNode] = 0;
 
         int[] parentNodes = new int[nodes.GetLength(0)];
@@ -78,7 +84,10 @@ class Player
         queue.Enqueue(currNode);
         while (currNode != exitNode)
         {
-            currNode = queue.Dequeue();
+            if (queue.Count > 0)
+                currNode = queue.Dequeue();
+            else
+                return new ClosestNodeWithDist { dist = int.MaxValue };
             for (int j = 0; j < nodes.GetLength(0); j++)
             {
                 if (nodes[currNode, j] == 1)
