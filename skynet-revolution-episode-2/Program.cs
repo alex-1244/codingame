@@ -17,40 +17,43 @@ class Player
     static void Main(string[] args)
     {
         string[] inputs;
-        var a = Console.ReadLine();
-        Console.Error.WriteLine(a);
-        inputs = a.Split(' ');
-        int N = int.Parse(inputs[0]); // the total number of nodes in the level, including the gateways
-        nodes = new int[N, N];
-        gateways = new int[N];
+        var inputLine = Console.ReadLine();
+        Console.Error.WriteLine(inputLine);
+        inputs = inputLine.Split(' ');
+        int nodesNum = int.Parse(inputs[0]); // the total number of nodes in the level, including the gateways
+        nodes = new int[nodesNum, nodesNum];
+        gateways = new int[nodesNum];
 
-        int L = int.Parse(inputs[1]); // the number of links
-        int E = int.Parse(inputs[2]); // the number of exit gateways
-        for (int i = 0; i < L; i++)
+        int linkesNum = int.Parse(inputs[1]); // the number of links
+        int exitsNum = int.Parse(inputs[2]); // the number of exit gateways
+        for (int i = 0; i < linkesNum; i++)
         {
-            a = Console.ReadLine();
-            Console.Error.WriteLine(a);
-            inputs = a.Split(' ');
+            inputLine = Console.ReadLine();
+            Console.Error.WriteLine(inputLine);
+            inputs = inputLine.Split(' ');
             int N1 = int.Parse(inputs[0]); // N1 and N2 defines a link between these nodes
             int N2 = int.Parse(inputs[1]);
             nodes[N1, N2] = 1;
             nodes[N2, N1] = 1;
         }
-        for (int i = 0; i < E; i++)
+
+        for (int i = 0; i < exitsNum; i++)
         {
-            a = Console.ReadLine();
-            Console.Error.WriteLine(a);
-            int EI = int.Parse(a); // the index of a gateway node
+            inputLine = Console.ReadLine();
+            Console.Error.WriteLine(inputLine);
+            int EI = int.Parse(inputLine); // the index of a gateway node
             gateways[EI] = 1;
         }
 
         // game loop
-        List<ClosestNodeWithDist> removedNodes = new List<ClosestNodeWithDist>();
+        //List<ClosestNodeWithDist> removedNodes = new List<ClosestNodeWithDist>();
+
         while (true)
         {
-            a = Console.ReadLine();
-            Console.Error.WriteLine(a);
-            int SI = int.Parse(a); // The index of the node on which the Skynet agent is positioned this turn
+            var closestNodes = new List<ClosestNodeWithDist>();
+            inputLine = Console.ReadLine();
+            Console.Error.WriteLine(inputLine);
+            int skynetIndex = int.Parse(inputLine); // The index of the node on which the Skynet agent is positioned this turn
 
             ClosestNodeWithDist closestNode = new ClosestNodeWithDist { dist = int.MaxValue };
 
@@ -58,14 +61,48 @@ class Player
             {
                 if (gateways[i] != 0)
                 {
-                    var newclosestNodeWithDist = GetClosestNodeWithDist(SI, i);
+                    var newclosestNodeWithDist = GetClosestNodeWithDist(skynetIndex, i);
+                    closestNodes.Add(newclosestNodeWithDist);
+
                     if (newclosestNodeWithDist.dist < closestNode.dist)
                     {
                         closestNode = newclosestNodeWithDist;
-                        removedNodes.Add(new ClosestNodeWithDist { y = closestNode.y, x = closestNode.x, dist = closestNode.dist });
+                        //removedNodes.Add(new ClosestNodeWithDist { y = closestNode.y, x = closestNode.x, dist = closestNode.dist });
                     }
                 }
             }
+
+            closestNodes = closestNodes.OrderBy(x => x.dist).ToList();
+
+            if (closestNodes[0].dist == 1)
+            {
+                nodes[closestNodes[0].x, closestNodes[0].y] = 0;
+                nodes[closestNodes[0].y, closestNodes[0].x] = 0;
+                Console.WriteLine($"{closestNode.x} {closestNode.y}");
+                continue;
+            }
+            else
+            {
+                var breaked = false;
+                for (int i = 0; i < closestNodes.Count - 1; i++)
+                {
+                    if (closestNodes[i].x == closestNodes[i + 1].x)
+                    {
+                        nodes[closestNodes[i].x, closestNodes[i].y] = 0;
+                        nodes[closestNodes[i].y, closestNodes[i].x] = 0;
+                        Console.WriteLine($"{closestNodes[i].x} {closestNodes[i].y}");
+                        breaked = true;
+                        break;
+                    }
+                }
+                if (breaked)
+                {
+                    continue;
+                }
+            }
+
+            Console.Error.WriteLine("Dist: " + closestNode.dist);
+
             nodes[closestNode.x, closestNode.y] = 0;
             nodes[closestNode.y, closestNode.x] = 0;
             Console.WriteLine($"{closestNode.x} {closestNode.y}");
@@ -75,7 +112,7 @@ class Player
     private static ClosestNodeWithDist GetClosestNodeWithDist(int startNode, int exitNode)
     {
         Queue<int> queue = new Queue<int>();
-        int[] distToNode = new int[nodes.GetLength(0)].Select(x => int.MaxValue).ToArray();
+        int[] distToNode = Enumerable.Range(0, nodes.GetLength(0)).Select(x => int.MaxValue).ToArray();
         distToNode[startNode] = 0;
 
         int[] parentNodes = new int[nodes.GetLength(0)];
@@ -101,6 +138,7 @@ class Player
                 }
             }
         }
+
         return new ClosestNodeWithDist { y = exitNode, x = parentNodes[exitNode], dist = distToNode[exitNode] };
     }
 
