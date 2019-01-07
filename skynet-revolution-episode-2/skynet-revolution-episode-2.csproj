@@ -7,7 +7,7 @@
     <ProjectGuid>{B04B19AC-ABB8-4129-99D5-FB96870B8F21}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>skynet_revolution_episode_2</RootNamespace>
-    <AssemblyName>skynet_revolution_episode_2</AssemblyName>
+    <AssemblyName>skynet-revolution-episode-2</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="lox.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

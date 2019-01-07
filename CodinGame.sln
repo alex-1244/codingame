@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Skynet", "Skynet\Skynet.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "shadows-of-the-knight-episode-1", "shadows-of-the-knight-episode-1\shadows-of-the-knight-episode-1.csproj", "{F4821320-E964-49C0-A1BE-2DCB2553E0AD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "skynet-revolution-episode-2", "skynet-revolution-episode-2\skynet-revolution-episode-2.csproj", "{B04B19AC-ABB8-4129-99D5-FB96870B8F21}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Code_of_the_rings", "Code_of_the_rings\Code_of_the_rings.csproj", "{3BC9443C-610E-45F5-8E23-F5EB3B88FB8C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,8 +37,19 @@ Global
 		{F4821320-E964-49C0-A1BE-2DCB2553E0AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F4821320-E964-49C0-A1BE-2DCB2553E0AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F4821320-E964-49C0-A1BE-2DCB2553E0AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B04B19AC-ABB8-4129-99D5-FB96870B8F21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B04B19AC-ABB8-4129-99D5-FB96870B8F21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B04B19AC-ABB8-4129-99D5-FB96870B8F21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B04B19AC-ABB8-4129-99D5-FB96870B8F21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BC9443C-610E-45F5-8E23-F5EB3B88FB8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BC9443C-610E-45F5-8E23-F5EB3B88FB8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BC9443C-610E-45F5-8E23-F5EB3B88FB8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BC9443C-610E-45F5-8E23-F5EB3B88FB8C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4D63A5E5-B422-4943-A25D-AF1042DFB51E}
 	EndGlobalSection
 EndGlobal
