@@ -76,8 +76,8 @@ class Player
 
             if (closestNodes[0].dist == 1)
             {
-                nodes[closestNode.x, closestNode.y] = 0;
-                nodes[closestNode.y, closestNode.x] = 0;
+                nodes[closestNodes[0].x, closestNodes[0].y] = 0;
+                nodes[closestNodes[0].y, closestNodes[0].x] = 0;
                 Console.WriteLine($"{closestNode.x} {closestNode.y}");
                 continue;
             }
