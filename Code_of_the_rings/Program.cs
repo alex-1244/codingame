@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Code_of_the_rings
@@ -20,9 +19,18 @@ namespace Code_of_the_rings
 			_zones = new int[30];
 			_sequence = new Sequence();
 
+			var state = new BoardState(_zones, 0);
+			var solution = string.Empty;
 
+			foreach (var letter in _phraze)
+			{
+				Strategy s = new Strategy(state);
+				var nextMove = s.Solve(state, letter);
+				solution += nextMove.path;
+				state = nextMove.state;
+			}
 
-			Console.WriteLine("+.>-.");
+			Console.WriteLine(solution);
 		}
 	}
 
@@ -31,54 +39,36 @@ namespace Code_of_the_rings
 		public string Hash { get; }
 
 		private readonly BoardState _state;
-		private readonly int _playerPosition;
-		private int[] _remainingLetters;
-		private int[] _parsedLetters;
 
-		public Strategy(BoardState initialState, int[] remainingLetters, int[] parsedLetters, int playerPosition)
+		public Strategy(BoardState initialState)
 		{
 			this._state = initialState;
-			this._remainingLetters = remainingLetters;
-			this._parsedLetters = parsedLetters;
-			this._playerPosition = playerPosition;
 			this.Hash = this.GetStrategyString();
 		}
 
-		//жадный алгоритм, на каждом шаге искать самое оптимальное решение
-		public void MakeMove()
+		public (BoardState state, string path) Solve(BoardState state, int nextLetter)
 		{
-			if (_remainingLetters.Length == 0)
-			{
-				throw new InvalidOperationException("Solution found, make something!!");
-			}
-
-			var allPosibleStates = new List<BoardState>();
-			var nextLetter = _remainingLetters[0];
-
-			allPosibleStates = _state.State.Select((x, i) => _state.Transform(i, x)).ToList();
+			var allPosibleStates = _state.State.Select((x, i) => _state.Transform(i, nextLetter)).ToList();
 
 			var bestState = allPosibleStates.GroupBy(x => x.GetDistanceTo(_state)).OrderBy(x => x.Key).First().First();
 
 			var movement = _state.MoveTo(bestState);
-			//need to change classes, Idea:
-			//	- store movement, _remainingLetters letters and player position together,
-			//	- then recuirsivelly make changes to the states, store AllowReversePInvokeCallsAttribute the descision tree somewhere,
-			//		compare for dublicates and delete them.
-			//	- if number of descisions > 1000 (for example)
-			//		Select the best descision (compare by average number of moves for the letter (Moves.Length/numberOfPrintedLetters))
+
+			return (bestState, movement);
 		}
 
 		private string GetStrategyString()
 		{
 			return AlphabetConverter.ToWord(_state.State)
-				   + _playerPosition
-				   + AlphabetConverter.ToWord(_remainingLetters);
+				   + _state.PlayerPosition;
+			//+ AlphabetConverter.ToWord(_remainingLetters);
 		}
 	}
 
 	public class BoardState
 	{
 		public const int BoardSize = 30;
+		public const int AlphabetSize = 27;
 
 		public BoardState(int[] state, int playerPosition)
 		{
@@ -112,30 +102,36 @@ namespace Code_of_the_rings
 			var move = string.Empty;
 
 			var distRight = Math.Abs(other.PlayerPosition - this.PlayerPosition);
-			var distLeft = this.PlayerPosition + 1 + (BoardSize - other.PlayerPosition);
+			var distLeft = Math.Min(Math.Abs(other.PlayerPosition - this.PlayerPosition), this.PlayerPosition + (BoardSize - other.PlayerPosition));
 
-			if (distRight < distLeft)
+			if (distRight != 0)
 			{
-				move += Enumerable.Range(0, distRight).Select(x => ">").Aggregate((x, y) => x + y);
-			}
-			else
-			{
-				move += Enumerable.Range(0, distRight).Select(x => "<").Aggregate((x, y) => x + y);
+				if (distRight < distLeft)
+				{
+					move += Enumerable.Range(0, distRight).Select(x => ">").Aggregate((x, y) => x + y);
+				}
+				else
+				{
+					move += Enumerable.Range(0, distLeft).Select(x => "<").Aggregate((x, y) => x + y);
+				}
 			}
 
 			var stateAtPlayersPosition = this.State[other.PlayerPosition];
 			var desiredStateAtPlayersPosition = other.State[other.PlayerPosition];
 
-			var distUp = Math.Abs(desiredStateAtPlayersPosition - stateAtPlayersPosition);
-			var distDown = stateAtPlayersPosition + 1 + (BoardSize - desiredStateAtPlayersPosition);
+			var distUp = Math.Min(Math.Abs(desiredStateAtPlayersPosition - stateAtPlayersPosition), desiredStateAtPlayersPosition + (AlphabetSize - stateAtPlayersPosition));
+			var distDown = stateAtPlayersPosition + (AlphabetSize - desiredStateAtPlayersPosition);
 
-			if (distUp < distDown)
+			if (distUp != 0)
 			{
-				move += Enumerable.Range(0, distUp).Select(x => "+").Aggregate((x, y) => x + y);
-			}
-			else
-			{
-				move += Enumerable.Range(0, distDown).Select(x => "-").Aggregate((x, y) => x + y);
+				if (distUp < distDown)
+				{
+					move += Enumerable.Range(0, distUp).Select(x => "+").Aggregate((x, y) => x + y);
+				}
+				else
+				{
+					move += Enumerable.Range(0, distDown).Select(x => "-").Aggregate((x, y) => x + y);
+				}
 			}
 
 			move += ".";
@@ -146,10 +142,10 @@ namespace Code_of_the_rings
 		public int GetDistanceTo(BoardState other)
 		{
 			return this.State
-				.Zip(other.State, (x, y) => Math.Min(Math.Abs(y - x), x + 1 + (BoardSize - y)))
+				.Zip(other.State, (x, y) => Math.Min(Math.Min(Math.Abs(y - x), x + (AlphabetSize - y)), y + (AlphabetSize - x)))
 				.Sum()
 				   //distance from player position to desired player position
-				   + Math.Min(Math.Abs(other.PlayerPosition - this.PlayerPosition), this.PlayerPosition + 1 + (BoardSize - other.PlayerPosition));
+				   + Math.Min(Math.Abs(other.PlayerPosition - this.PlayerPosition), this.PlayerPosition + (BoardSize - other.PlayerPosition));
 		}
 	}
 
