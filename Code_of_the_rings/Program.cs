@@ -101,10 +101,10 @@ namespace Code_of_the_rings
 		{
 			var move = string.Empty;
 
-			var distRight = Math.Abs(other.PlayerPosition - this.PlayerPosition);
-			var distLeft = Math.Min(Math.Abs(other.PlayerPosition - this.PlayerPosition), this.PlayerPosition + (BoardSize - other.PlayerPosition));
+			var distRight = this.GetRightDistance(this.PlayerPosition, other.PlayerPosition, BoardSize);
+			var distLeft = BoardSize - distRight;
 
-			if (distRight != 0)
+			if (distRight != 0 && distLeft != 0)
 			{
 				if (distRight < distLeft)
 				{
@@ -119,10 +119,10 @@ namespace Code_of_the_rings
 			var stateAtPlayersPosition = this.State[other.PlayerPosition];
 			var desiredStateAtPlayersPosition = other.State[other.PlayerPosition];
 
-			var distUp = Math.Min(Math.Abs(desiredStateAtPlayersPosition - stateAtPlayersPosition), desiredStateAtPlayersPosition + (AlphabetSize - stateAtPlayersPosition));
-			var distDown = stateAtPlayersPosition + (AlphabetSize - desiredStateAtPlayersPosition);
+			var distUp = this.GetRightDistance(stateAtPlayersPosition, desiredStateAtPlayersPosition, AlphabetSize);
+			var distDown = AlphabetSize - distUp;
 
-			if (distUp != 0)
+			if (distUp != 0 && distDown != 0)
 			{
 				if (distUp < distDown)
 				{
@@ -142,11 +142,33 @@ namespace Code_of_the_rings
 		public int GetDistanceTo(BoardState other)
 		{
 			return this.State
-				.Zip(other.State, (x, y) => Math.Min(Math.Min(Math.Abs(y - x), x + (AlphabetSize - y)), y + (AlphabetSize - x)))
+				.Zip(other.State, (x, y) => Math.Min(this.GetRightDistance(x, y, AlphabetSize), AlphabetSize - this.GetRightDistance(x, y, AlphabetSize)))
 				.Sum()
 				   //distance from player position to desired player position
-				   + Math.Min(Math.Abs(other.PlayerPosition - this.PlayerPosition), this.PlayerPosition + (BoardSize - other.PlayerPosition));
+				   + Math.Min(this.GetRightDistance(other.PlayerPosition, this.PlayerPosition, BoardSize), BoardSize - this.GetRightDistance(other.PlayerPosition, this.PlayerPosition, BoardSize));
 		}
+
+		private int GetRightDistance(int current, int desired, int length)
+		{
+			if (current < desired)
+			{
+				return desired - current;
+			}
+
+			var dist = current - desired;
+			return length - dist;
+		}
+
+		//private int GetLeftDistance(int current, int desired, int length)
+		//{
+		//	if (desired < current)
+		//	{
+		//		return current - desired;
+		//	}
+
+		//	var dist = current - desired;
+		//	return length - dist;
+		//}
 	}
 
 	public class Sequence
