@@ -76,3 +76,4 @@ _[Ss]cripts
 *.dot[Cc]over
 applicationhost.config
 /.vs/CodinGame/v15
+/.vs/CodinGame/DesignTimeBuild/.dtbcache

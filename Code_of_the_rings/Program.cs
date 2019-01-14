@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Code_of_the_rings
@@ -8,45 +9,197 @@ namespace Code_of_the_rings
 	{
 		private static int[] _phraze;
 		private static int[] _zones;
-		private static Sequence _sequence;
 
-		static void Main(string[] args)
+		static void Main()
 		{
-			string magicPhrase = Console.ReadLine();
+			var magicPhrase = Console.ReadLine();
 			// To debug: Console.Error.WriteLine("Debug messages...");
 
-			_phraze = AlphabetConverter.ToNumberArray(magicPhrase);
+			_phraze = AlphabetHelper.ToNumberArray(magicPhrase);
 			_zones = new int[30];
-			_sequence = new Sequence();
 
-			var state = new BoardState(_zones, 0);
-			var solution = string.Empty;
-
-			foreach (var letter in _phraze)
-			{
-				Strategy s = new Strategy(state);
-				var nextMove = s.Solve(state, letter);
-				solution += nextMove.path;
-				state = nextMove.state;
-			}
+			var solution = SimpleStrategy.Solve(_zones, _phraze);
+			var otherSolution = ClusteredStrategy.Solve(_zones, _phraze);
 
 			Console.WriteLine(solution);
 		}
 	}
 
-	public class Strategy
+	public class ClusteredStrategy
 	{
-		public string Hash { get; }
+		private const int MaxNumberOfClusters = 6;
 
-		private readonly BoardState _state;
-
-		public Strategy(BoardState initialState)
+		public static string Solve(int[] zones, int[] phraze)
 		{
-			this._state = initialState;
-			this.Hash = this.GetStrategyString();
+			var lettersClusters = ClusterizeLetters(phraze);
+
+			return "";
 		}
 
-		public (BoardState state, string path) Solve(BoardState state, int nextLetter)
+		private static Cluster ClusterizeLetters(int[] phraze)
+		{
+			var uniqueLetters = phraze.Distinct().ToArray();
+			var distances = new List<LetterDistance>();
+
+			foreach (var letter in uniqueLetters)
+			{
+				foreach (var otherLetter in uniqueLetters)
+				{
+					distances.Add(new LetterDistance(letter, otherLetter, AlphabetHelper.GetDistanceBetweenLetters(letter, otherLetter)));
+				}
+			}
+
+			var clusterizer = new Clusterizer(distances, uniqueLetters);
+			return clusterizer.Clusterize();
+		}
+	}
+
+	public class Clusterizer
+	{
+		private readonly IEnumerable<LetterDistance> _distances;
+		private readonly int[] _uniqueLetters;
+
+		public Clusterizer(IEnumerable<LetterDistance> distances, int[] uniqueLetters)
+		{
+			this._distances = distances.Distinct(new DistanceComparer())
+				.OrderByDescending(x => x.Dist).Where(x=>x.Dist != 0);
+			this._uniqueLetters = uniqueLetters;
+		}
+
+		public Cluster Clusterize()
+		{
+			var cluster = new Cluster()
+			{
+				Items = _uniqueLetters,
+			};
+
+			var exceptFirst = _distances.Skip(1).ToList();
+			while (this.CanClusterize(exceptFirst))
+			{
+				var leftSublusterMembers = this.GetSubclusterMembers(exceptFirst);
+				if (leftSublusterMembers.Count < _uniqueLetters.Length)
+				{
+					var distancesForLeftSubcluster = _distances
+						.Where(x => leftSublusterMembers.Contains(x.A) && leftSublusterMembers.Contains(x.B)).ToList();
+					var otherDistances = _distances.Except(distancesForLeftSubcluster);
+
+					cluster.LeftSubcluster = new Clusterizer(distancesForLeftSubcluster, leftSublusterMembers.ToArray()).Clusterize();
+					cluster.RightSubcluster = new Clusterizer(otherDistances, _uniqueLetters.Except(leftSublusterMembers).ToArray())
+						.Clusterize();
+
+					break;
+				}
+
+				exceptFirst = exceptFirst.Skip(1).ToList();
+			}
+
+			return cluster;
+		}
+
+
+		private List<int> GetSubclusterMembers(List<LetterDistance> exceptFirst)
+		{
+			var visitedLetters = new List<int>();
+			var lettersToVisit = new Queue<int>();
+			lettersToVisit.Enqueue(exceptFirst.First().A);
+
+			while (lettersToVisit.Any())
+			{
+				var current = lettersToVisit.Dequeue();
+				var connectedFromA = exceptFirst.Where(x => x.A == current).Select(x => x.B);
+				var connectedToA = exceptFirst.Where(x => x.B == current).Select(x => x.A);
+				var connected = connectedToA.Concat(connectedFromA).Distinct().Where(x => !visitedLetters.Contains(x)).ToArray();
+
+				if (!connected.Any())
+				{
+					continue;
+				}
+
+				visitedLetters.AddRange(connected);
+				lettersToVisit.Enqueue(connected.First());
+			}
+
+			return visitedLetters.Distinct().ToList();
+		}
+
+		private bool CanClusterize(IEnumerable<LetterDistance> distances)
+		{
+			var letterDistances = distances as LetterDistance[] ?? distances.ToArray();
+			if (!letterDistances.Any() || letterDistances.Count() < 2)
+			{
+				return false;
+			}
+
+			return true;
+		}
+	}
+
+	public class Cluster
+	{
+		public IEnumerable<int> Items { get; set; }
+		public int NumberOfItems => Items.Count();
+		public Cluster LeftSubcluster { get; set; }
+		public Cluster RightSubcluster { get; set; }
+	}
+
+	public class DistanceComparer : IEqualityComparer<LetterDistance>
+	{
+		public bool Equals(LetterDistance x, LetterDistance y)
+		{
+			if (x.A == y.A && x.B == y.B)
+			{
+				return true;
+			}
+
+			return x.A == y.B && x.B == y.A;
+		}
+
+		public int GetHashCode(LetterDistance obj)
+		{
+			return obj.A * 137 + obj.B * 151 + obj.B * 137 + obj.A * 151; ;
+		}
+	}
+
+	public struct LetterDistance
+	{
+		public LetterDistance(int a, int b, int dist)
+		{
+			this.A = a;
+			this.B = b;
+			this.Dist = dist;
+		}
+
+		public int A { get; }
+		public int B { get; }
+		public int Dist { get; }
+	}
+
+	public class SimpleStrategy
+	{
+		private readonly BoardState _state;
+
+		private SimpleStrategy(BoardState initialState)
+		{
+			this._state = initialState;
+		}
+
+		public static string Solve(int[] zones, IEnumerable<int> phraze)
+		{
+			var state = new BoardState(zones, 0);
+			var solution = string.Empty;
+
+			foreach (var letter in phraze)
+			{
+				SimpleStrategy s = new SimpleStrategy(state);
+				var nextMove = s.SolveInternal(letter);
+				solution += nextMove.path;
+				state = nextMove.state;
+			}
+
+			return solution;
+		}
+
+		private (BoardState state, string path) SolveInternal(int nextLetter)
 		{
 			var allPosibleStates = _state.State.Select((x, i) => _state.Transform(i, nextLetter)).ToList();
 
@@ -56,28 +209,21 @@ namespace Code_of_the_rings
 
 			return (bestState, movement);
 		}
-
-		private string GetStrategyString()
-		{
-			return AlphabetConverter.ToWord(_state.State)
-				   + _state.PlayerPosition;
-			//+ AlphabetConverter.ToWord(_remainingLetters);
-		}
 	}
 
 	public class BoardState
 	{
-		public const int BoardSize = 30;
-		public const int AlphabetSize = 27;
+		private const int BoardSize = 30;
+		private readonly int _playerPosition;
+
 
 		public BoardState(int[] state, int playerPosition)
 		{
 			State = state;
-			PlayerPosition = playerPosition;
+			_playerPosition = playerPosition;
 		}
 
 		public int[] State { get; }
-		public int PlayerPosition { get; private set; }
 
 		public BoardState Transform(int position, int desiredState)
 		{
@@ -101,7 +247,7 @@ namespace Code_of_the_rings
 		{
 			var move = string.Empty;
 
-			var distRight = this.GetRightDistance(this.PlayerPosition, other.PlayerPosition, BoardSize);
+			var distRight = this.GetRightDistance(this._playerPosition, other._playerPosition, BoardSize);
 			var distLeft = BoardSize - distRight;
 
 			if (distRight != 0 && distLeft != 0)
@@ -116,11 +262,11 @@ namespace Code_of_the_rings
 				}
 			}
 
-			var stateAtPlayersPosition = this.State[other.PlayerPosition];
-			var desiredStateAtPlayersPosition = other.State[other.PlayerPosition];
+			var stateAtPlayersPosition = this.State[other._playerPosition];
+			var desiredStateAtPlayersPosition = other.State[other._playerPosition];
 
-			var distUp = this.GetRightDistance(stateAtPlayersPosition, desiredStateAtPlayersPosition, AlphabetSize);
-			var distDown = AlphabetSize - distUp;
+			var distUp = this.GetRightDistance(stateAtPlayersPosition, desiredStateAtPlayersPosition, AlphabetHelper.AlphabetSize);
+			var distDown = AlphabetHelper.AlphabetSize - distUp;
 
 			if (distUp != 0 && distDown != 0)
 			{
@@ -142,10 +288,12 @@ namespace Code_of_the_rings
 		public int GetDistanceTo(BoardState other)
 		{
 			return this.State
-				.Zip(other.State, (x, y) => Math.Min(this.GetRightDistance(x, y, AlphabetSize), AlphabetSize - this.GetRightDistance(x, y, AlphabetSize)))
+				.Zip(other.State, (x, y) => Math.Min(
+						   this.GetRightDistance(x, y, AlphabetHelper.AlphabetSize),
+						   AlphabetHelper.AlphabetSize - this.GetRightDistance(x, y, AlphabetHelper.AlphabetSize)))
 				.Sum()
 				   //distance from player position to desired player position
-				   + Math.Min(this.GetRightDistance(other.PlayerPosition, this.PlayerPosition, BoardSize), BoardSize - this.GetRightDistance(other.PlayerPosition, this.PlayerPosition, BoardSize));
+				   + Math.Min(this.GetRightDistance(other._playerPosition, this._playerPosition, BoardSize), BoardSize - this.GetRightDistance(other._playerPosition, this._playerPosition, BoardSize));
 		}
 
 		private int GetRightDistance(int current, int desired, int length)
@@ -158,17 +306,6 @@ namespace Code_of_the_rings
 			var dist = current - desired;
 			return length - dist;
 		}
-
-		//private int GetLeftDistance(int current, int desired, int length)
-		//{
-		//	if (desired < current)
-		//	{
-		//		return current - desired;
-		//	}
-
-		//	var dist = current - desired;
-		//	return length - dist;
-		//}
 	}
 
 	public class Sequence
@@ -211,13 +348,24 @@ namespace Code_of_the_rings
 		}
 	}
 
-	public static class AlphabetConverter
+	public static class AlphabetHelper
 	{
+		public const int AlphabetSize = 27;
 		private const string Alphabet = " ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 		public static int[] ToNumberArray(string phraze)
 		{
 			return phraze.Select(x => Alphabet.IndexOf(x)).ToArray();
+		}
+
+		public static int GetDistanceBetweenLetters(int x, int y)
+		{
+			if (x >= y)
+			{
+				return Math.Min(x - y, AlphabetSize - x + y);
+			}
+
+			return Math.Min(y - x, AlphabetSize + x - y);
 		}
 
 		public static string ToWord(int[] state)
