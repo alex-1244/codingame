@@ -39,6 +39,8 @@ class Map
 		this.Cells = cells;
 		this.Start = cells.First(x => x == startCell);
 
+		this._cellsDict = cells.ToDictionary(x => $"{x.X}_{x.Y}", x => x);
+
 		switch (initialDirection)
 		{
 			case ">":
@@ -72,6 +74,8 @@ class Map
 	public Cell Start { get; set; }
 	public Direction Orientation { get; }
 	public Direction Side { get; }
+
+	private Dictionary<string, Cell> _cellsDict;
 
 	public IEnumerable<Cell> GetNeighborCells(Cell cell)
 	{
@@ -118,38 +122,17 @@ class Map
 			rightCell,
 			bottomCell,
 			leftCell
-			//new CellWithDirection{
-			//	Cell = topCell,
-			//	Direction = Direction.Top
-			//},
-			//new CellWithDirection{
-			//	Cell = rightCell,
-			//	Direction = Direction.Right
-			//},
-			//new CellWithDirection{
-			//	Cell = bottomCell,
-			//	Direction = Direction.Down
-			//},
-			//new CellWithDirection{
-			//	Cell = leftCell,
-			//	Direction = Direction.Left
-			//},
 		});
-	}
-
-	public int GetNumberOfNeighborCells(Cell cell)
-	{
-		if (!cell.IsPassable)
-		{
-			return -1;
-		}
-
-		return this.GetNeighborCells(cell).Count(x => x.IsPassable);
 	}
 
 	private Cell OnPosition(int x, int y)
 	{
-		return this.Cells.FirstOrDefault(c => c.X == x && c.Y == y) ?? Cell.NullCell;
+		if (x < 0 || y < 0 || x >= this.Height || y >= this.Width)
+		{
+			return Cell.NullCell;
+		}
+
+		return this._cellsDict[$"{x}_{y}"];
 	}
 }
 
@@ -167,14 +150,10 @@ class DetourStrategy
 	public void Process()
 	{
 		var initialCell = this.Map.Start;
+		initialCell.Visit();
 		var currentCell = this.VisitNextCell(initialCell);
 		while (currentCell != initialCell)
 		{
-			if (initialCell.NumberOfVisits == 0)
-			{
-				initialCell.Visit();
-			}
-
 			currentCell.Visit();
 			currentCell = this.VisitNextCell(currentCell);
 		}
@@ -183,7 +162,7 @@ class DetourStrategy
 	private Cell VisitNextCell(Cell currentCell)
 	{
 		var cells = this.Map.GetNeighborCells(currentCell).ToArray();
-		var orderedCells = this.GetNeighborCells(cells, currentCell, this._currentOrientation, this.Map.Side);
+		var orderedCells = this.GetNeighborCells(cells, this._currentOrientation, this.Map.Side);
 
 		var nextCell = orderedCells.FirstOrDefault(x => x.IsPassable);
 
@@ -192,12 +171,12 @@ class DetourStrategy
 			return currentCell;
 		}
 
-		this._currentOrientation = GetNewOrientation(currentCell, Array.IndexOf(cells, nextCell));
+		this._currentOrientation = GetNewOrientation(Array.IndexOf(cells, nextCell));
 
 		return nextCell;
 	}
 
-	private Direction GetNewOrientation(Cell currentCell, int nextCellIndex)
+	private Direction GetNewOrientation(int nextCellIndex)
 	{
 		if (nextCellIndex == 0)
 		{
@@ -215,14 +194,15 @@ class DetourStrategy
 		return Direction.Left;
 	}
 
-	private Cell[] GetNeighborCells(Cell[] cells, Cell currentCell, Direction currentOrientation, Direction side)
+	private Cell[] GetNeighborCells(Cell[] cells, Direction currentOrientation, Direction side)
 	{
 		//LEFT
 		if (currentOrientation == Direction.Right && side == Direction.Left)
 		{
 			return cells.ToArray();
 		}
-		else if (currentOrientation == Direction.Down && side == Direction.Left)
+
+		if (currentOrientation == Direction.Down && side == Direction.Left)
 		{
 			return new Cell[]
 			{
@@ -232,7 +212,8 @@ class DetourStrategy
 				cells[0]
 			};
 		}
-		else if (currentOrientation == Direction.Left && side == Direction.Left)
+
+		if (currentOrientation == Direction.Left && side == Direction.Left)
 		{
 			return new Cell[]
 			{
@@ -242,7 +223,8 @@ class DetourStrategy
 				cells[1]
 			};
 		}
-		else if (currentOrientation == Direction.Top && side == Direction.Left)
+
+		if (currentOrientation == Direction.Top && side == Direction.Left)
 		{
 			return new Cell[]
 			{
@@ -263,7 +245,8 @@ class DetourStrategy
 				cells[3]
 			};
 		}
-		else if (currentOrientation == Direction.Down && side == Direction.Right)
+
+		if (currentOrientation == Direction.Down && side == Direction.Right)
 		{
 			return new Cell[]
 			{
@@ -273,7 +256,8 @@ class DetourStrategy
 				cells[0]
 			};
 		}
-		else if (currentOrientation == Direction.Left && side == Direction.Right)
+
+		if (currentOrientation == Direction.Left && side == Direction.Right)
 		{
 			return new Cell[]
 			{
@@ -283,7 +267,8 @@ class DetourStrategy
 				cells[1]
 			};
 		}
-		else if (currentOrientation == Direction.Top && side == Direction.Right)
+
+		if (currentOrientation == Direction.Top && side == Direction.Right)
 		{
 			return new Cell[]
 			{
@@ -297,12 +282,6 @@ class DetourStrategy
 		throw new ArgumentException();
 	}
 }
-
-//class CellWithDirection
-//{
-//	public Cell Cell { get; set; }
-//	public Direction Direction { get; set; }
-//}
 
 class Cell : IEquatable<Cell>
 {
