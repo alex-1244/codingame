@@ -13,7 +13,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "shadows-of-the-knight-episo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "skynet-revolution-episode-2", "skynet-revolution-episode-2\skynet-revolution-episode-2.csproj", "{B04B19AC-ABB8-4129-99D5-FB96870B8F21}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Code_of_the_rings", "Code_of_the_rings\Code_of_the_rings.csproj", "{3BC9443C-610E-45F5-8E23-F5EB3B88FB8C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Code_of_the_rings", "Code_of_the_rings\Code_of_the_rings.csproj", "{3BC9443C-610E-45F5-8E23-F5EB3B88FB8C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "detective_pikatcha", "detective_pikatcha\detective_pikatcha.csproj", "{21462BE8-9339-4F6B-89E5-2AE7AC6C0C8F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{3BC9443C-610E-45F5-8E23-F5EB3B88FB8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3BC9443C-610E-45F5-8E23-F5EB3B88FB8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3BC9443C-610E-45F5-8E23-F5EB3B88FB8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21462BE8-9339-4F6B-89E5-2AE7AC6C0C8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21462BE8-9339-4F6B-89E5-2AE7AC6C0C8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21462BE8-9339-4F6B-89E5-2AE7AC6C0C8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21462BE8-9339-4F6B-89E5-2AE7AC6C0C8F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
