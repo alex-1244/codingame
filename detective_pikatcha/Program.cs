@@ -127,7 +127,6 @@ class DetourStrategy
 				initialCell.Visit();
 			}
 
-			Console.Error.WriteLine($"cell: ({currentCell.X},{currentCell.Y}), orientation:{this._currentOrientation}, direction:{this.Map.Side}");
 			currentCell.Visit();
 			currentCell = this.VisitNextCell(currentCell);
 		}
@@ -253,7 +252,6 @@ class DetourStrategy
 			};
 		}
 
-		Console.Error.WriteLine($"cell: ({currentCell.X},{currentCell.Y}), orientation:{currentOrientation}, direction:{side}");
 		throw new ArgumentException();
 	}
 }
